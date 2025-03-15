@@ -5,11 +5,11 @@ services:
     image: flink:1.20.1-java17
     ports:
       - "8081:8081"
+      - "6123:6123"  # Expose JobManager RPC port
     command: jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
-    volumes:
-      - ./target:/opt/flink/usrlib
+      - FLINK_PROPERTIES=jobmanager.rpc.address:jobmanager
 
   taskmanager:
     image: flink:1.20.1-java17
@@ -18,17 +18,6 @@ services:
     command: taskmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=jobmanager
+      - FLINK_PROPERTIES=taskmanager.numberOfTaskSlots:2
     volumes:
-      - ./target:/opt/flink/usrlib
-      
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    depends_on:
-      - jobmanager
-    environment:
-      - FLINK_JOBMANAGER_ADDRESS=jobmanager
-      - FLINK_JOBMANAGER_PORT=6123
+      - ./target:/opt/flink/usrlib  # Optional: if you need to share JARs
